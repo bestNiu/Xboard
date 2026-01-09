@@ -1,0 +1,9 @@
+{
+    "name": "悦创支付",
+    "code": "yuechuang",
+    "type": "payment",
+    "version": "1.0.0",
+    "description": "悦创支付网关插件，支持微信/支付宝H5及扫码支付",
+    "author": "XBoard Team"
+}
+

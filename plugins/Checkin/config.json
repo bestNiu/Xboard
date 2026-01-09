@@ -1,0 +1,31 @@
+{
+    "name": "每日签到",
+    "code": "checkin",
+    "version": "1.0.0",
+    "description": "每日签到获取随机流量奖励",
+    "author": "XBoard Team",
+    "require": {
+        "xboard": ">=1.0.0"
+    },
+    "config": {
+        "min_traffic": {
+            "type": "number",
+            "default": 1,
+            "label": "最小流量 (GB)",
+            "description": "签到获得的最小流量，单位为 GB"
+        },
+        "max_traffic": {
+            "type": "number",
+            "default": 5,
+            "label": "最大流量 (GB)",
+            "description": "签到获得的最大流量，单位为 GB"
+        },
+        "require_active_plan": {
+            "type": "boolean",
+            "default": false,
+            "label": "需要有效订阅",
+            "description": "是否要求用户拥有有效订阅才能签到"
+        }
+    }
+}
+

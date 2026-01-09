@@ -143,7 +143,7 @@ class Plugin extends AbstractPlugin implements PaymentInterface
         // H5支付返回 h5_url
         if (isset($result['h5_url']) && !empty($result['h5_url'])) {
             // 清理URL中的空格、换行符等
-            $h5Url = trim(str_replace(["\r", "\n", "\r\n", " "], '', $result['h5_url']));
+            $h5Url = preg_replace('/\s+/', '', trim($result['h5_url']));
             return [
                 'type' => 1, // 跳转支付
                 'data' => $h5Url
@@ -153,7 +153,7 @@ class Plugin extends AbstractPlugin implements PaymentInterface
         // 扫码支付返回 scan_url
         if (isset($result['scan_url']) && !empty($result['scan_url'])) {
             // 清理URL中的空格、换行符等
-            $scanUrl = trim(str_replace(["\r", "\n", "\r\n", " "], '', $result['scan_url']));
+            $scanUrl = preg_replace('/\s+/', '', trim($result['scan_url']));
             return [
                 'type' => 0, // 二维码支付
                 'data' => $scanUrl
@@ -245,12 +245,31 @@ class Plugin extends AbstractPlugin implements PaymentInterface
 
     /**
      * 生成符合要求的订单号（20位字符）
+     * 
+     * 订单号组成：
+     * - 8位日期 (YmdHis 的 Ymd 部分)
+     * - 4位微秒 (确保同一秒内的请求有差异)
+     * - 4位随机数 (额外保障唯一性)
+     * - 4位 trade_no 的 MD5 (关联原始订单)
+     * 
+     * 总长度：8 + 4 + 4 + 4 = 20位
      */
     private function generateOrderId(string $tradeNo): string
     {
-        // 确保订单号长度为20位
-        $orderId = date('YmdHis') . substr(md5($tradeNo), 0, 6);
-        return substr($orderId, 0, 20);
+        // 获取日期 YmdHis (14位) 但只取前8位日期部分
+        $date = date('Ymd'); // 8位
+        
+        // 获取微秒时间戳的后4位，确保同一秒内请求的差异
+        $microtime = substr(str_replace('.', '', microtime(true)), -6, 4); // 4位
+        
+        // 生成4位随机数，额外保障唯一性
+        $random = str_pad(mt_rand(0, 9999), 4, '0', STR_PAD_LEFT); // 4位
+        
+        // 取 trade_no MD5 的前4位，用于关联原始订单
+        $hash = substr(md5($tradeNo . microtime(true)), 0, 4); // 4位
+        
+        // 总长度：8 + 4 + 4 + 4 = 20位
+        return $date . $microtime . $random . $hash;
     }
 
     /**

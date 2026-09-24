@@ -23,6 +23,7 @@ class ClientRoute
             'middleware' => 'user'
         ], function ($router) {
             $router->get('/account', [AccountController::class, 'show']);
+            $router->get('/subscription', [AccountController::class, 'subscription']);
             $router->post('/session/logout', [AccountController::class, 'logout']);
         });
     }

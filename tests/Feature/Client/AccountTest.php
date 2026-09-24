@@ -18,6 +18,10 @@ class AccountTest extends TestCase
 
         config()->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
         config()->set('app.url', 'https://panel.example.com');
+        config()->set('cache.default', 'array');
+        config()->set('cache.stores.redis', ['driver' => 'array']);
+        app('cache')->forgetDriver('redis');
+        app('cache')->setDefaultDriver('array');
         Queue::fake();
     }
 
@@ -28,14 +32,26 @@ class AccountTest extends TestCase
         $response = $this->withToken($token)->getJson('/api/v2/client/account');
 
         $response->assertOk()->assertJsonPath('data.email', $user->email);
+        $response->assertJsonPath(
+            'data.account_id',
+            hash_hmac('sha256', (string) $user->id, config('app.key'))
+        );
+        $response->assertJsonPath('data.subscription.available', true);
         $response->assertJsonPath('data.subscription.plan_id', null);
         $response->assertJsonPath('data.subscription.total', 1024);
-        $response->assertJsonPath(
-            'data.subscription.url',
-            "https://panel.example.com/s/{$user->token}"
-        );
+        $response->assertJsonMissingPath('data.subscription.url');
         $response->assertJsonMissingPath('data.subscription.token');
         $response->assertJsonMissingPath('data.subscription.uuid');
+    }
+
+    public function test_subscription_requires_a_bearer_session(): void
+    {
+        $this->get('/api/v2/client/subscription')->assertStatus(403);
+
+        [, $token] = $this->userAndToken();
+        $this->withToken($token)
+            ->get('/api/v2/client/subscription?flag=clash-meta')
+            ->assertOk();
     }
 
     public function test_logout_revokes_the_current_session(): void

@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Routes\V2;
 
+use App\Http\Controllers\V2\Client\AccountController;
 use App\Http\Controllers\V2\Client\AppController;
 use Illuminate\Contracts\Routing\Registrar;
 
@@ -15,6 +16,14 @@ class ClientRoute
             // App
             $router->get('/app/getConfig', [AppController::class, 'getConfig']);
             $router->get('/app/getVersion', [AppController::class, 'getVersion']);
+        });
+
+        $router->group([
+            'prefix' => 'client',
+            'middleware' => 'user'
+        ], function ($router) {
+            $router->get('/account', [AccountController::class, 'show']);
+            $router->post('/session/logout', [AccountController::class, 'logout']);
         });
     }
 }

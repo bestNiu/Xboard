@@ -22,7 +22,14 @@ if (!function_exists('admin_setting')) {
             return '';
         }
 
-        $default = config('v2board.' . $key) ?? $default;
+        $applicationDefaults = [
+            'app_name' => config('app.name', 'fly001'),
+            'app_description' => config('app.description', 'fly001 network service'),
+            'app_url' => config('app.url'),
+            'subscribe_url' => config('app.url'),
+        ];
+        $default = config('v2board.' . $key)
+            ?? ($applicationDefaults[$key] ?? $default);
         return $setting->get($key) ?? $default;
     }
 }

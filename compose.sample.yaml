@@ -10,10 +10,10 @@
 # use compose.host.sample.yaml.
 services:
   xboard:
-    image: ghcr.io/cedar2025/xboard:latest
+    image: ${XBOARD_IMAGE:-ghcr.io/bestniu/xboard:commercial-dev}
     restart: unless-stopped
     ports:
-      - "7001:7001"
+      - "${XBOARD_BIND_ADDRESS:-127.0.0.1}:${XBOARD_PORT:-7001}:7001"
     volumes:
       - ./.env:/www/.env
       - ./.docker/.data/:/www/.docker/.data

@@ -2,7 +2,7 @@ name: Docker Build and Publish
 
 on:
   push:
-    branches: ["master", "new-dev"]
+    branches: ["master", "new-dev", "commercial-dev"]
   workflow_dispatch:
 
 env:
@@ -76,6 +76,9 @@ jobs:
           sed -i "s/'version' => '.*'/'version' => '$VERSION'/g" config/app.php
           echo "Updated version to: $VERSION"
 
+      - name: Audit production dependencies
+        run: docker run --rm -v "$PWD:/app" -w /app composer:2 audit --locked --no-dev
+
       - name: Build and push
         id: build-and-push
         uses: docker/build-push-action@v5
@@ -90,9 +93,6 @@ jobs:
           build-args: |
             BUILDKIT_INLINE_CACHE=1
             BUILDKIT_MULTI_PLATFORM=1
-            CACHEBUST=${{ github.sha }}
-            REPO_URL=https://github.com/${{ github.repository }}
-            BRANCH_NAME=${{ github.ref_name }}
           provenance: false
           outputs: type=registry,push=true
           allow: |

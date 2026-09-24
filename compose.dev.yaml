@@ -1,0 +1,23 @@
+services:
+  xboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fly001/xboard:dev
+    restart: unless-stopped
+    ports:
+      - "${XBOARD_BIND_ADDRESS:-127.0.0.1}:${XBOARD_PORT:-7001}:7001"
+    volumes:
+      - ./.env:/www/.env
+      - ./.docker/.data/:/www/.docker/.data
+      - ./storage/logs:/www/storage/logs
+      - ./storage/theme:/www/storage/theme
+      - ./plugins:/www/plugins
+      - redis-data:/data
+    environment:
+      RESOURCE_PROFILE: ${RESOURCE_PROFILE:-minimal}
+      ENABLE_HORIZON: "true"
+      docker: "true"
+
+volumes:
+  redis-data:
